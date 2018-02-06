@@ -1,0 +1,55 @@
+DATA: lt_table0 TYPE TABLE OF z_dec,
+      ls_table0 LIKE LINE OF lt_table0,
+
+      lt_table1 TYPE TABLE OF z_dec,
+      ls_table1 LIKE LINE OF lt_table1,
+      lv_start   TYPE i.
+
+FIELD-SYMBOLS: <fv_source> TYPE any.
+
+SELECT  FROM z_dec INTO TABLE lt_table0
+                  WHERE recordtype = 0.
+
+SELECT  FROM z_dec INTO TABLE lt_table1
+                  WHERE recordtype = 1.
+
+SORT lt_table0 BY startfrom ASCENDING.
+SORT lt_table1 BY startfrom ASCENDING.
+
+LOOP AT SOURCE_PACKAGE ASSIGNING <source_fields>.
+
+  IF <source_fields>-field1(1) = 0.
+
+    LOOP AT lt_table0 INTO ls_table0.
+
+      lv_start = ls_table0-startfrom - 1.
+	  "
+      ASSIGN COMPONENT ls_table0-infoobject OF STRUCTURE
+      RESULT_FIELDS TO <fv_source>.
+
+      <fv_source> =
+      <source_fields>-field1+lv_start(ls_table0-length).
+
+    ENDLOOP.
+
+    APPEND RESULT_FIELDS TO RESULT_PACKAGE.
+
+  ELSEIF <source_fields>-field1(1) = 1.
+
+    LOOP AT lt_table1 INTO ls_table1.
+
+      lv_start = ls_table1-startfrom - 1.
+
+      ASSIGN COMPONENT ls_table1-infoobject OF STRUCTURE
+      RESULT_FIELDS TO <fv_source>.
+
+      <fv_source> =
+      <source_fields>-field1+lv_start(ls_table1-length).
+
+    ENDLOOP.
+
+    APPEND RESULT_FIELDS TO RESULT_PACKAGE.
+
+  ENDIF.
+
+ENDLOOP.
